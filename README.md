@@ -1,4 +1,5 @@
-# DeepBonds: LSTM Encoder-Decoder for Bond Yield Prediction
+# Implementation of DeepBonds
+DeepBonds) Jia-Ching Ying; Yu-Bing Wang; Chih-Kai Chang; Ching-Wen Chang; Yu-Han Chen; Yow-Shin Liou
 
 A deep learning approach for predicting US government bond yields using an LSTM encoder-decoder architecture with Professor Forcing training methodology.
 
@@ -10,15 +11,6 @@ This project implements a sequence-to-sequence model for forecasting bond yields
 - **Principal Component Analysis (PCA)**: Dimensionality reduction for feature extraction
 - **Teacher Forcing**: Training technique that uses ground truth as input during training
 - **Professor Forcing**: Advanced adversarial training method that uses a discriminator to distinguish between teacher-forced and free-running behavior
-
-## Features
-
-- Multi-layer LSTM encoder-decoder with dropout regularization
-- Integration of macroeconomic indicators (CPI, ISM Manufacturing Index)
-- PCA-based feature engineering
-- Teacher forcing and Professor Forcing training strategies
-- Comprehensive visualization tools
-- Modular and extensible codebase
 
 ## Project Structure
 
@@ -159,30 +151,8 @@ The model uses three primary data sources:
 
 Data should be in CSV format with a date column for temporal alignment.
 
-## Results
 
-The model achieves strong predictive performance on US 5-year bond yields:
 
-- Trains with teacher forcing to stabilize learning
-- Optional Professor Forcing for improved generalization
-- Generates 22-step-ahead forecasts
-
-## Evaluation Metrics
-
-The model is evaluated using:
-- **Mean Squared Error (MSE)**
-- **Root Mean Squared Error (RMSE)**
-- **Mean Absolute Error (MAE)**
-
-## Visualization
-
-The project includes visualization tools for:
-- Feature covariance matrix heatmaps
-- PCA explained variance analysis
-- Feature loadings for principal components
-- Actual vs. predicted bond yield comparisons
-
-Generated visualizations are saved as interactive HTML files using Plotly.
 
 
  
