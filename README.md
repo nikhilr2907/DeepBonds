@@ -1,5 +1,6 @@
 # Implementation of DeepBonds
-DeepBonds) Jia-Ching Ying; Yu-Bing Wang; Chih-Kai Chang; Ching-Wen Chang; Yu-Han Chen; Yow-Shin Liou
+
+Original Paper (DeepBonds): Jia-Ching Ying, Yu-Bing Wang, Chih-Kai Chang, Ching-Wen Chang, Yu-Han Chen, Yow-Shin Liou. "DeepBonds: A Deep Learning Approach to Predicting United States Treasury Yield".
 
 A deep learning approach for predicting US government bond yields using an LSTM encoder-decoder architecture with Professor Forcing training methodology.
 
