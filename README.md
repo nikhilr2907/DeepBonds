@@ -149,24 +149,6 @@ This approach helps the model generalize better during inference when it must re
 
 **Reference**: Lamb, A. M., Goyal, A., Zhang, Y., Zhang, S., Couville, A. C., & Bengio, Y. (2016). "Professor Forcing: A New Algorithm for Training Recurrent Networks." *Advances in Neural Information Processing Systems* (NeurIPS 2016), 4601-4609. [arXiv:1610.09038](https://arxiv.org/abs/1610.09038)
 
-## Related Work
-
-### LSTM for Financial Time Series
-
-LSTMs have proven effective for financial forecasting due to their ability to capture long-term dependencies:
-
-1. **Fischer, T., & Krauss, C.** (2018). "Deep learning with long short-term memory networks for financial market predictions." *European Journal of Operational Research*, 270(2), 654-669.
-
-2. **Bao, W., Yue, J., & Rao, Y.** (2017). "A deep learning framework for financial time series using stacked autoencoders and long-short term memory." *PloS one*, 12(7), e0180944.
-
-### LSTM for Bond Yield Prediction
-
-3. **Huang, Y., Capretz, L. F., & Ho, D.** (2021). "Machine learning for stock prediction based on fundamental analysis." *IEEE Access*, 9, 43943-43954.
-
-4. **Nystrup, P., Madsen, H., & Lindström, E.** (2020). "Dynamic portfolio optimization across hidden market regimes." *Quantitative Finance*, 20(1), 83-95.
-
-5. **Hsu, M. W., Lessmann, S., Sung, M. C., Ma, T., & Johnson, J. E.** (2016). "Bridging the divide in financial market forecasting: machine learners vs. financial economists." *Expert Systems with Applications*, 61, 215-234.
-
 ## Data
 
 The model uses three primary data sources:
@@ -180,7 +162,7 @@ Data should be in CSV format with a date column for temporal alignment.
 ## Results
 
 The model achieves strong predictive performance on US 5-year bond yields:
-- Uses PCA to extract 3 principal components explaining ~XX% of variance
+
 - Trains with teacher forcing to stabilize learning
 - Optional Professor Forcing for improved generalization
 - Generates 22-step-ahead forecasts
@@ -202,37 +184,5 @@ The project includes visualization tools for:
 
 Generated visualizations are saved as interactive HTML files using Plotly.
 
-## Future Enhancements
 
-- [ ] Multi-output prediction for multiple bond maturities
-- [ ] Attention mechanisms for improved sequence modeling
-- [ ] Integration of additional macroeconomic indicators
-- [ ] Ensemble methods combining multiple models
-- [ ] Real-time prediction pipeline
-- [ ] Hyperparameter optimization with Bayesian methods
-
-
-## References
-
-### Core Methodology
-
-1. **Professor Forcing**: Lamb, A. M., Goyal, A., Zhang, Y., Zhang, S., Couville, A. C., & Bengio, Y. (2016). "Professor Forcing: A New Algorithm for Training Recurrent Networks." *NeurIPS 2016*. [arXiv:1610.09038](https://arxiv.org/abs/1610.09038)
-
-2. **Teacher Forcing**: Williams, R. J., & Zipser, D. (1989). "A Learning Algorithm for Continually Running Fully Recurrent Neural Networks." *Neural Computation*, 1(2), 270-280.
-
-### LSTM Foundations
-
-3. **LSTM Networks**: Hochreiter, S., & Schmidhuber, J. (1997). "Long short-term memory." *Neural computation*, 9(8), 1735-1780.
-
-4. **Sequence-to-Sequence Learning**: Sutskever, I., Vinyals, O., & Le, Q. V. (2014). "Sequence to sequence learning with neural networks." *NeurIPS 2014*.
-
-### Financial Time Series with Deep Learning
-
-5. Fischer, T., & Krauss, C. (2018). "Deep learning with long short-term memory networks for financial market predictions." *European Journal of Operational Research*, 270(2), 654-669.
-
-6. Bao, W., Yue, J., & Rao, Y. (2017). "A deep learning framework for financial time series using stacked autoencoders and long-short term memory." *PloS one*, 12(7), e0180944.
-
-## License
-
-This project is licensed under the MIT License - see the LICENSE file for details.
  
