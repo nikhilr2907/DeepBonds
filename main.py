@@ -1,9 +1,3 @@
-"""
-DeepBonds: LSTM Encoder-Decoder for Bond Yield Prediction with Professor Forcing
-
-Main training and prediction script for bond yield forecasting using deep learning.
-"""
-
 import os
 import argparse
 from dotenv import load_dotenv
@@ -117,23 +111,91 @@ def main(args):
     print("\nTest Set Metrics:")
     metrics = print_metrics(predictions, Y_test_cpu)
 
-    # Visualizations (optional)
+    # ========================================================================
+    # VISUALIZATION SECTION
+    # ========================================================================
     if args.visualize:
-        print("\nGenerating visualizations...")
+        print("\n" + "="*60)
+        print("GENERATING VISUALIZATIONS")
+        print("="*60)
 
-        # Plot covariance matrix
+        # Create output directory for plots
+        plot_dir = 'final_plots'
+        os.makedirs(plot_dir, exist_ok=True)
+        print(f"\nSaving all plots to '{plot_dir}/' directory...")
+
+        # ----------------------------------------------------------------
+        # Section A: PCA and Feature Analysis Plots
+        # ----------------------------------------------------------------
+        print("\n[A] PCA and Feature Analysis Plots")
+        print("-" * 60)
+
+        # A1. Covariance Matrix Heatmap
+        print("  [A1] Generating covariance matrix heatmap...")
         cov_fig = plot_covariance_matrix(cov_matrix)
-        cov_fig.write_html("output_covariance_matrix.html")
+        cov_fig.write_image(f"{plot_dir}/covariance_matrix.png", width=800, height=600)
+        print("       ✓ Saved: covariance_matrix.png")
 
-        # Plot PCA explained variance
+        # A2. PCA Explained Variance
+        print("  [A2] Generating PCA explained variance plot...")
         pca_fig = plot_pca_explained_variance(pca)
-        pca_fig.write_html("output_pca_variance.html")
+        pca_fig.write_image(f"{plot_dir}/pca_explained_variance.png", width=800, height=600)
+        print("       ✓ Saved: pca_explained_variance.png")
 
-        # Plot predictions
-        pred_fig = plot_predictions(Y_test_cpu, predictions)
-        pred_fig.write_html("output_predictions.html")
+        # A3. Feature Loadings for Principal Components
+        print("  [A3] Generating feature loadings plot...")
+        feature_names = [col for col in features_df.columns if col != 'us_5_year_yields']
+        loadings_fig = plot_feature_loadings(pca, feature_names)
+        loadings_fig.write_image(f"{plot_dir}/feature_loadings.png", width=1000, height=600)
+        print("       ✓ Saved: feature_loadings.png")
 
-        print("Visualizations saved to HTML files")
+        # ----------------------------------------------------------------
+        # Section B: Model Prediction Plots
+        # ----------------------------------------------------------------
+        print("\n[B] Model Prediction Plots")
+        print("-" * 60)
+
+        # B1. Test Set Predictions
+        print("  [B1] Generating test set prediction plot...")
+        pred_fig = plot_predictions(
+            Y_test_cpu,
+            predictions,
+            title="Test Set: Actual vs Predicted Bond Yields"
+        )
+        pred_fig.write_image(f"{plot_dir}/test_predictions.png", width=1200, height=600)
+        print("       ✓ Saved: test_predictions.png")
+
+        # B2. Train Set Predictions (for comparison)
+        print("  [B2] Generating train set prediction plot...")
+        X_train_cpu = X_train.cpu()
+        Y_train_cpu = Y_train.cpu().numpy()
+
+        with torch.no_grad():
+            train_predictions = model.predict(X_train_cpu, TARGET_LENGTH)
+
+        train_pred_fig = plot_predictions(
+            Y_train_cpu,
+            train_predictions,
+            title="Train Set: Actual vs Predicted Bond Yields"
+        )
+        train_pred_fig.write_image(f"{plot_dir}/train_predictions.png", width=1200, height=600)
+        print("       ✓ Saved: train_predictions.png")
+
+        # ----------------------------------------------------------------
+        # Visualization Summary
+        # ----------------------------------------------------------------
+        print("\n" + "="*60)
+        print("VISUALIZATION SUMMARY")
+        print("="*60)
+        print(f"\nAll plots saved to '{plot_dir}/' directory:")
+        print("\n  PCA & Feature Analysis:")
+        print("    - covariance_matrix.png")
+        print("    - pca_explained_variance.png")
+        print("    - feature_loadings.png")
+        print("\n  Model Predictions:")
+        print("    - test_predictions.png")
+        print("    - train_predictions.png")
+        print("="*60)
 
     print("\n" + "="*60)
     print("Training complete!")

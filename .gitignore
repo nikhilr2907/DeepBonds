@@ -1,2 +1,6 @@
 .env
 .ipynb
+Deep_Bonds.ipynb
+**\.pth
+**\__pycache__
+.claude

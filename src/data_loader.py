@@ -11,40 +11,80 @@ import torch
 def load_data():
     """Load and perform initial processing of bond and economic data."""
 
-    # Load main bond data
-    bond_data_path = os.getenv('BOND_DATA_PATH', '/content/sample_data/us-government-bond.csv')
+    # Load main bond data (daily frequency)
+    bond_data_path = os.getenv('BOND_DATA_PATH', 'data/us-government-bond.csv')
     df = pd.read_csv(bond_data_path)
     df.dropna(inplace=True)
 
-    # Load CPI data
-    cpi_data_path = os.getenv('CPI_DATA_PATH', '/content/sample_data/CORESTICKM159SFRBATL.csv')
+    # Load CPI data (monthly frequency - STICKCPIM157SFRBATL)
+    cpi_data_path = os.getenv('CPI_DATA_PATH', 'data/STICKCPIM157SFRBATL.csv')
     cpi = pd.read_csv(cpi_data_path)
-    cpi["DATE"] = pd.to_datetime(cpi["DATE"])
-    cpi = cpi.rename(columns={"DATE": "date"})
+    # Standardize date column name to 'date'
+    if 'observation_date' in cpi.columns:
+        cpi = cpi.rename(columns={"observation_date": "date"})
+    elif 'DATE' in cpi.columns:
+        cpi = cpi.rename(columns={"DATE": "date"})
+    cpi["date"] = pd.to_datetime(cpi["date"])
+    # Rename the CPI column to a more descriptive name
+    cpi = cpi.rename(columns={"STICKCPIM157SFRBATL": "cpi"})
 
-    # Load ISM data
-    ism_data_path = os.getenv('ISM_DATA_PATH', '/content/sample_data/AMTMNO.csv')
+    # Load ISM/Manufacturing data (monthly frequency - AMTMNO)
+    ism_data_path = os.getenv('ISM_DATA_PATH', 'data/AMTMNO.csv')
     ism = pd.read_csv(ism_data_path)
-    ism["DATE"] = pd.to_datetime(ism["DATE"])
-    ism = ism.rename(columns={"DATE": "date"})
+    # Standardize date column name to 'date'
+    if 'observation_date' in ism.columns:
+        ism = ism.rename(columns={"observation_date": "date"})
+    elif 'DATE' in ism.columns:
+        ism = ism.rename(columns={"DATE": "date"})
+    ism["date"] = pd.to_datetime(ism["date"])
+    # Rename the ISM column to a more descriptive name
+    ism = ism.rename(columns={"AMTMNO": "manufacturing_orders"})
 
     return df, cpi, ism
 
 
 def preprocess_data(df, cpi, ism):
-    """Complete data preprocessing pipeline."""
+    """Complete data preprocessing pipeline with monthly-to-daily conversion."""
 
-    # Process main dataframe
-    df['date'] = pd.to_datetime(df['date'], format="%d/%m/%Y")
-    df['DivYield'] = df['DivYield'].replace('%', '', regex=True)
-    df["DivYield"] = pd.to_numeric(df["DivYield"])
+    # Process main dataframe (daily frequency)
+    df['date'] = pd.to_datetime(df['date'], format='ISO8601')
 
-    # Merge datasets
-    df = pd.merge(df, ism, how="left", on="date")
-    df = pd.merge(df, cpi, how="left", on="date")
+    # Handle DivYield column if it exists
+    if 'DivYield' in df.columns:
+        df['DivYield'] = df['DivYield'].replace('%', '', regex=True)
+        df["DivYield"] = pd.to_numeric(df["DivYield"], errors='coerce')
 
-    # Handle missing values
-    df.fillna(method="backfill", inplace=True)
+    # Sort all dataframes by date
+    df = df.sort_values('date').reset_index(drop=True)
+    cpi = cpi.sort_values('date').reset_index(drop=True)
+    ism = ism.sort_values('date').reset_index(drop=True)
+
+    # Convert monthly data to daily frequency using forward-fill method
+    # This ensures that the monthly value applies to all days in that month
+    # until the next monthly observation
+
+    # Create a complete daily date range from the main dataframe
+    date_range = pd.DataFrame({'date': pd.date_range(
+        start=df['date'].min(),
+        end=df['date'].max(),
+        freq='D'
+    )})
+
+    # Merge monthly CPI data with daily range and forward-fill
+    cpi_daily = pd.merge(date_range, cpi, on='date', how='left')
+    cpi_daily['cpi'] = cpi_daily['cpi'].ffill()
+
+    # Merge monthly ISM data with daily range and forward-fill
+    ism_daily = pd.merge(date_range, ism, on='date', how='left')
+    ism_daily['manufacturing_orders'] = ism_daily['manufacturing_orders'].ffill()
+
+    # Merge all datasets on date
+    df = pd.merge(df, ism_daily, how="left", on="date")
+    df = pd.merge(df, cpi_daily, how="left", on="date")
+
+    # Handle any remaining missing values using backfill then forward-fill
+    df = df.bfill()
+    df = df.ffill()
     df.dropna(inplace=True)
 
     return df
