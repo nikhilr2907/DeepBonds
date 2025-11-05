@@ -68,28 +68,39 @@ def main(args):
     X_test = X_test.to(device)
     Y_test = Y_test.to(device)
 
-    # 5. Train base model with teacher forcing
-    print("\n[5/7] Training LSTM Seq2Seq model with teacher forcing...")
+    # Get model save path
+    model_save_path = os.getenv('MODEL_SAVE_PATH', 'trained_model.pth')
+
+    # 5. Train base model with teacher forcing (or load if exists)
     model = LSTMSeq2Seq(input_size=INPUT_SIZE, hidden_size=HIDDEN_SIZE)
     model = model.to(device)
 
-    avg_loss = model.train_model(
-        X_train, Y_train,
-        n_epochs=args.epochs,
-        target_len=TARGET_LENGTH,
-        batch_size=BATCH_SIZE,
-        training_prediction='teacher_forcing',
-        teacher_forcing_ratio=args.teacher_forcing_ratio,
-        learning_rate=args.learning_rate,
-        dynamic_tf=args.dynamic_tf
-    )
-    print(f"Average training loss: {avg_loss:.4f}")
+    if os.path.exists(model_save_path) and not args.force_retrain:
+        print(f"\n[5/7] Found existing trained model at '{model_save_path}'")
+        print("Loading pre-trained model (use --force-retrain to retrain from scratch)...")
+        model.load_state_dict(torch.load(model_save_path, map_location=device))
+        print("✓ Model loaded successfully")
+    else:
+        if args.force_retrain and os.path.exists(model_save_path):
+            print(f"\n[5/7] Force retraining enabled - ignoring existing model at '{model_save_path}'")
+        print("\n[5/7] Training LSTM Seq2Seq model with teacher forcing...")
+        avg_loss = model.train_model(
+            X_train, Y_train,
+            n_epochs=args.epochs,
+            target_len=TARGET_LENGTH,
+            batch_size=BATCH_SIZE,
+            training_prediction='teacher_forcing',
+            teacher_forcing_ratio=args.teacher_forcing_ratio,
+            learning_rate=args.learning_rate,
+            dynamic_tf=args.dynamic_tf
+        )
+        print(f"Average training loss: {avg_loss:.4f}")
 
     # 6. Optional: Train with Professor Forcing
     if args.use_professor_forcing:
         print("\n[6/7] Training with Professor Forcing (adversarial)...")
         model_alt = ModelAlternate(input_size=INPUT_SIZE, hidden_size=HIDDEN_SIZE).to(device)
-        model_alt.load_state_dict(torch.load('trained_model.pth'))
+        model_alt.load_state_dict(torch.load(model_save_path, map_location=device))
         model_alt.adversarial_train(
             input_tensor=X_train,
             target_tensor=Y_train,
@@ -215,6 +226,10 @@ if __name__ == "__main__":
                        help='Teacher forcing ratio (0.0 to 1.0)')
     parser.add_argument('--dynamic-tf', action='store_true',
                        help='Use dynamic teacher forcing (gradually decrease ratio)')
+
+    # Model loading/saving
+    parser.add_argument('--force-retrain', action='store_true',
+                       help='Force retraining even if trained model exists')
 
     # Professor Forcing parameters
     parser.add_argument('--use-professor-forcing', action='store_true',
